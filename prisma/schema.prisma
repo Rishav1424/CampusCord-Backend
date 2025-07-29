@@ -1,0 +1,112 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id       String  @id @default(cuid())
+    username String  @unique
+    name     String
+    email    String  @unique
+    verified Boolean @default(false)
+    password String
+
+    servers  Membership[]
+    messages Message[]
+    likes    Like[]
+}
+
+model Server {
+    id          String  @id @default(cuid())
+    name        String  @unique
+    domain      String? @unique
+    description String?
+    isPrimary   Boolean @default(false)
+
+    members  Membership[]
+    channels Channel[]
+
+    createdAt DateTime @default(now())
+    
+}
+
+model Membership {
+    userId   String
+    serverId String
+    admin    Boolean @default(false)
+
+    user   User   @relation(fields: [userId], references: [id])
+    server Server @relation(fields: [serverId], references: [id])
+
+    @@id([userId, serverId])
+    @@index([serverId])
+    @@index([userId])
+}
+
+model Channel {
+    name       String
+    topic      String?
+    restricted Boolean @default(false)
+    call       Boolean @default(false)
+    serverId   String
+
+    server   Server    @relation(fields: [serverId], references: [id], onDelete: Cascade)
+    messages Message[]
+
+    createdAt DateTime @default(now())
+
+    @@id([serverId, name])
+    @@index([serverId, createdAt])
+}
+
+model Message {
+    id      String  @id @default(cuid())
+    content String?
+
+    userId      String
+    channelName String
+    serverId    String
+
+    channel   Channel @relation(fields: [channelName, serverId], references: [name, serverId])
+    likes     Like[]
+    createdBy User    @relation(fields: [userId], references: [id])
+    media     Media[]
+
+    createdAt DateTime @default(now())
+
+    @@index([serverId, channelName, createdAt])
+}
+
+model Like {
+    userId    String
+    messageId String
+
+    user    User    @relation(fields: [userId], references: [id])
+    message Message @relation(fields: [messageId], references: [id])
+
+    @@id([userId, messageId])
+    @@index([messageId])
+}
+
+model Media {
+    id        String    @id @default(cuid())
+    type      MediaType
+    name      String?
+    messageId String
+
+    message Message @relation(fields: [messageId], references: [id])
+
+    createdAt DateTime @default(now())
+
+    @@index([messageId])
+}
+
+enum MediaType {
+    IMAGE
+    VIDEO
+    FILE
+}
