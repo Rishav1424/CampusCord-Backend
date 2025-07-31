@@ -1,7 +1,7 @@
 import transporter from "../config/mail.js";
 
 export const sendVerificationEmail = async (user, token) => {
-  const verifyUrl = `http://localhost:5000/api/auth/verify?token=${token}`;
+  const verifyUrl = `${process.env.BACKEND_URL}api/auth/verify?token=${token}`;
   try {
     await transporter.sendMail({
       from: `"CampusCord" <${process.env.EMAIL_USER}>`,
