@@ -38,7 +38,7 @@ export const authorizeMember = async (req, res, next) => {
         .json({ message: "Forbidden: You are not a member of this server" });
     }
 
-    console.log("authorized member");
+    // console.log("authorized member");
     next();
 
   } catch (error) {

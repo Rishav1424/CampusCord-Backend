@@ -202,6 +202,10 @@ export const deleteChannel = async (req, res) => {
 export const joinRoom = async (req, res) => {
   try {
     const userId = req.user.id;
+    const {username} = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { username: true },
+    });
     const { serverId, channelName } = req.params;
 
     const channel = prisma.channel.findUnique({
@@ -220,14 +224,14 @@ export const joinRoom = async (req, res) => {
       process.env.LIVEKIT_API_KEY,
       process.env.LIVEKIT_API_SECRET,
       {
-        identity: userId,
+        identity: username,
       }
     );
 
     at.addGrant({ room: `${serverId}/${channelName}`, roomJoin: true });
 
     const token = await at.toJwt();
-    console.log(token);
+    // console.log(token);
 
     res.json({
       url: process.env.LIVEKIT_URL,
@@ -322,7 +326,7 @@ export const likeMessage = async (req, res) => {
     });
     res.json({ success: "true" });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -339,7 +343,7 @@ export const disLikeMessage = async (req, res) => {
     });
     res.json({ success: "true" });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res.status(500).json({ message: error.message });
   }
 };
